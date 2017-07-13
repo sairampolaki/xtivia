@@ -1,0 +1,17 @@
+#%RAML 1.0
+title: basic-authentication
+version: 1.0
+baseUri: http://jsonplaceholder.typicode.com/
+securitySchemes:
+  basic:
+    type: Basic Authentication
+/users:
+  displayName: Users
+  description: Retrieve All Users
+  get:
+    securedBy: basic
+    responses: 
+      200:
+        body: 
+          application/json:
+            example: !include user-example.json

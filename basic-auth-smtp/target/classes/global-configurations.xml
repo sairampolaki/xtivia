@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp"
+	xmlns:mule-ss="http://www.mulesoft.org/schema/mule/spring-security"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:ss="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
+http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
+http://www.mulesoft.org/schema/mule/spring-security http://www.mulesoft.org/schema/mule/spring-security/current/mule-spring-security.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+<http:listener-config name="api-httpListenerConfig"
+		host="0.0.0.0" port="8082" doc:name="HTTP Listener Configuration" />
+	<apikit:config name="api-config" raml="api.raml"
+		consoleEnabled="false" doc:name="Router" />
+	<http:request-config name="HTTP_Request_Configuration"
+		host="jsonplaceholder.typicode.com" port="80" doc:name="HTTP Request Configuration" />
+
+	<spring:beans>
+		<ss:authentication-manager alias="authenticationManager">
+			<ss:authentication-provider>
+				<ss:user-service id="userService">
+					<ss:user name="admin" password="admin" authorities="ROLE_ADMIN" />
+					<ss:user name="user1" password="user1password" authorities="ROLE_DEV" />
+				</ss:user-service>
+			</ss:authentication-provider>
+		</ss:authentication-manager>
+	</spring:beans>
+
+
+	<mule-ss:security-manager name="muleSecurityManager"
+		doc:name="Spring Security Provider">
+		<mule-ss:delegate-security-provider
+			name="memory-provider" delegate-ref="authenticationManager" />
+	</mule-ss:security-manager>
+	
+    <context:property-placeholder location="mail-${env}.properties"/>
+    
+    <smtp:gmail-connector name="Gmail" validateConnections="true" doc:name="Gmail"/>
+    
+    <smtp:endpoint host="${host}" port="${port}" user="${user}" password="${password}" connector-ref="Gmail" to="${to.address}" subject="ERROR MESSAGE" name="SMTP" responseTimeout="10000" doc:name="SMTP"/>
+
+
+
+</mule>
